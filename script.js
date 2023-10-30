@@ -134,7 +134,7 @@ class ChessGame {
         for(const key in this.piecesPos){
             const sqr=document.getElementById(this.dictToId(key));
             sqr.style.textAlign="center";
-            sqr.style.color="red"; 
+            sqr.style.color="black"; 
             const piece=this.piecesPos[key]
             sqr.innerText=(numbers===2)?key:this.valueToCNotation(piece);
         }
@@ -170,28 +170,25 @@ class ChessGame {
         }
         moves.forEach(move => {
             const sqr = document.getElementById(this.dictToId(move));
+            console.log(sqr.id);
+            this.addTintToDiv(sqr,0.5,"red");
         
         });
     }
-    addTintToDiv(targetDiv, tintOpacity, tintColor) {
-        // Select the target div
-        var divToTint = document.getElementById(targetDiv);
-    
+    addTintToDiv(divToTint, tintOpacity, tintColor) {
+        
         // Create the tint div
         var tintDiv = document.createElement("div");
-        tintDiv.className = "tint-overlay"; // Add a class for styling
-        tintDiv.style.backgroundColor = tintColor || "rgba(0, 0, 0, 0.5)"; // Default is a semi-transparent black
-        tintDiv.style.opacity = tintOpacity || 0.5; // Default opacity is 0.5
-    
-        // Apply styles for the tint overlay
-        tintDiv.style.position = "absolute";
-        tintDiv.style.top = "0";
-        tintDiv.style.right = "0";
-        tintDiv.style.bottom = "0";
-        tintDiv.style.left = "0";
-        tintDiv.style.pointerEvents = "none"; // Allows clicking through the overlay
-    
-        // Append the tint div to the target div
+        tintDiv.className = "tint-overlay"; 
+        tintDiv.style.backgroundColor = tintColor//"rgba(0, 0, 0, 0.5)";
+        tintDiv.style.opacity = tintOpacity; 
+        tintDiv.style.borderRadius = "100%";
+        tintDiv.style.position = "relative";
+        tintDiv.style.textAlign="center";
+        tintDiv.style.left="10px";
+        tintDiv.style.width="30px";
+        tintDiv.style.height="30px";
+        tintDiv.style.pointerEvents = "none"; 
         divToTint.appendChild(tintDiv);
     }
     onSquareClick(square) {
@@ -207,14 +204,12 @@ class ChessGame {
                 else if(this.getPieceAtPosition(this.secondClickSqr)){
                     this.updateBoard();
                     if(!(this.turn===this.getPieceAtPosition(this.secondClickSqr)[0])){
-                        console.log(12);
                         return;
                     }
                     this.updateBoard();
                     this.clicks=1;
                     this.clickedPiece=this.getPieceAtPosition(this.secondClickSqr)
                     this.clickedSqr=this.secondClickSqr;
-                    console.log(this.clickedSqr);
                     const sqr=document.getElementById(this.secondClickSqr);
                     sqr.style.color="blue";
                     this.showLegalMoves();
@@ -236,7 +231,6 @@ class ChessGame {
             this.clickedPiece=this.getPieceAtPosition(square.id);
             this.clickedSqr=square.id;
             if(!(this.turn===this.getPieceAtPosition(this.clickedSqr)[0])){
-                console.log(12);
                 return;
             }
             square.style.color="blue";
