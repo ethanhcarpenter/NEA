@@ -10,7 +10,7 @@ class ChessGame {
         this.clickedPiece;
         this.clickedSqr;
         this.secondClickSqr;
-        
+        this.turn='w';
     }
     initBoard() {
         for (let row = 0; row < 8; row++) {
@@ -32,8 +32,8 @@ class ChessGame {
                 square.dataset.col = col;
                 square.style.border=0;
                 square.id=`${String.fromCharCode(96+col)}${9-row}`;
-                if (this.isOdd(row+col))square.style.backgroundColor = 'black';
-                else square.style.backgroundColor = 'white';
+                if (this.isOdd(row+col))square.style.backgroundColor = 'blue';
+                else square.style.backgroundColor = 'red';
                 if (this.isOdd(row+col))square.className= 'black';
                 else square.className='white';
                 square.style.userSelect="none";
@@ -137,7 +137,7 @@ class ChessGame {
             const sqr=document.getElementById(this.dictToId(key));
             sqr.style.textAlign="center";
             sqr.style.color="red"; 
-            if(sqr.className==="black")sqr.style.backgroundColor="black";
+            if(sqr.className==="black")sqr.style.backgroundColor="#805835";
             if(sqr.className==="white")sqr.style.backgroundColor="white";
             const piece=this.piecesPos[key]
             sqr.innerText=(numbers===2)?key:this.valueToCNotation(piece);
@@ -174,19 +174,27 @@ class ChessGame {
         }
         moves.forEach(move => {
             const sqr=document.getElementById(this.dictToId(move));
-            sqr.style.backgroundColor="green";
+            sqr.style.borderStyle = "solid"; 
+            sqr.style.borderColor = "green";
+            sqr.style.borderWidth = "2px";
         });
     }
     onSquareClick(square) {
         this.testerFunc();
+        
         if(this.clicks===1){
             this.secondClickSqr=square.id;
             if(!this.checkMove()){
                 this.clicks=0;
                 if(this.secondClickSqr===this.clickedSqr){
-                    
+                    this.updateBoard();
                 }
                 else if(this.getPieceAtPosition(this.secondClickSqr)){
+                    this.updateBoard();
+                    if(!(this.turn===this.getPieceAtPosition(this.secondClickSqr)[0])){
+                        console.log(12);
+                        return;
+                    }
                     this.updateBoard();
                     this.clicks=1;
                     this.clickedPiece=this.getPieceAtPosition(this.secondClickSqr)
@@ -199,18 +207,23 @@ class ChessGame {
                 }
                 this.clickedPiece=null;
                 this.clickedSqr=null;
-                this.updateBoard();
+                
                 return;
             }
             this.setPiecePosition(this.clickedPiece,this.secondClickSqr)
             this.setPiecePosition(null,this.clickedSqr)
             this.updateBoard();
+            this.turn=(this.turn==='w')?'b':'w';
             this.clicks=0
         }
         else if(this.clicks===0){
             if(!this.getPieceAtPosition(square.id)) return;
             this.clickedPiece=this.getPieceAtPosition(square.id);
             this.clickedSqr=square.id;
+            if(!(this.turn===this.getPieceAtPosition(this.clickedSqr)[0])){
+                console.log(12);
+                return;
+            }
             square.style.color="blue";
             this.showLegalMoves();
             this.clicks=1;
