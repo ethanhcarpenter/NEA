@@ -170,22 +170,29 @@ class ChessGame {
         }
         moves.forEach(move => {
             const sqr = document.getElementById(this.dictToId(move));
-            // Create a ::before pseudo-element
-            const beforeElement = document.createElement("div");
-            beforeElement.className = "before-element"; // Replace with your own class name
-
-            // Apply styles to the ::before element
-            beforeElement.style.content = '""';
-            beforeElement.style.position = "absolute";
-            beforeElement.style.background = "red";
-            beforeElement.style.top = "0";
-            beforeElement.style.bottom = "0";
-            beforeElement.style.left = "0";
-            beforeElement.style.right = "0";
-
-            // Append the ::before element to the sqr element
-            sqr.appendChild(beforeElement);
+        
         });
+    }
+    addTintToDiv(targetDiv, tintOpacity, tintColor) {
+        // Select the target div
+        var divToTint = document.getElementById(targetDiv);
+    
+        // Create the tint div
+        var tintDiv = document.createElement("div");
+        tintDiv.className = "tint-overlay"; // Add a class for styling
+        tintDiv.style.backgroundColor = tintColor || "rgba(0, 0, 0, 0.5)"; // Default is a semi-transparent black
+        tintDiv.style.opacity = tintOpacity || 0.5; // Default opacity is 0.5
+    
+        // Apply styles for the tint overlay
+        tintDiv.style.position = "absolute";
+        tintDiv.style.top = "0";
+        tintDiv.style.right = "0";
+        tintDiv.style.bottom = "0";
+        tintDiv.style.left = "0";
+        tintDiv.style.pointerEvents = "none"; // Allows clicking through the overlay
+    
+        // Append the tint div to the target div
+        divToTint.appendChild(tintDiv);
     }
     onSquareClick(square) {
         this.testerFunc();
@@ -232,7 +239,7 @@ class ChessGame {
                 console.log(12);
                 return;
             }
-            
+            square.style.color="blue";
             this.showLegalMoves();
             this.clicks=1;
             return
