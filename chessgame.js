@@ -220,6 +220,27 @@ function knight(b, position, white) {
 
   return legal;
 }
+function addTintToDiv(targetDiv, tintOpacity, tintColor) {
+  // Select the target div
+  var divToTint = document.getElementById(targetDiv);
+
+  // Create the tint div
+  var tintDiv = document.createElement("div");
+  tintDiv.className = "tint-overlay"; // Add a class for styling
+  tintDiv.style.backgroundColor = tintColor || "rgba(0, 0, 0, 0.5)"; // Default is a semi-transparent black
+  tintDiv.style.opacity = tintOpacity || 0.5; // Default opacity is 0.5
+
+  // Apply styles for the tint overlay
+  tintDiv.style.position = "absolute";
+  tintDiv.style.top = "0";
+  tintDiv.style.right = "0";
+  tintDiv.style.bottom = "0";
+  tintDiv.style.left = "0";
+  tintDiv.style.pointerEvents = "none"; // Allows clicking through the overlay
+
+  // Append the tint div to the target div
+  divToTint.appendChild(tintDiv);
+}
 
 
 

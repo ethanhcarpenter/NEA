@@ -32,8 +32,6 @@ class ChessGame {
                 square.dataset.col = col;
                 square.style.border=0;
                 square.id=`${String.fromCharCode(96+col)}${9-row}`;
-                if (this.isOdd(row+col))square.style.backgroundColor = 'blue';
-                else square.style.backgroundColor = 'red';
                 if (this.isOdd(row+col))square.className= 'black';
                 else square.className='white';
                 square.style.userSelect="none";
@@ -137,8 +135,6 @@ class ChessGame {
             const sqr=document.getElementById(this.dictToId(key));
             sqr.style.textAlign="center";
             sqr.style.color="red"; 
-            if(sqr.className==="black")sqr.style.backgroundColor="#805835";
-            if(sqr.className==="white")sqr.style.backgroundColor="white";
             const piece=this.piecesPos[key]
             sqr.innerText=(numbers===2)?key:this.valueToCNotation(piece);
         }
@@ -173,10 +169,22 @@ class ChessGame {
             moves=this.king(this.piecesPos,position,white);
         }
         moves.forEach(move => {
-            const sqr=document.getElementById(this.dictToId(move));
-            sqr.style.borderStyle = "solid"; 
-            sqr.style.borderColor = "green";
-            sqr.style.borderWidth = "2px";
+            const sqr = document.getElementById(this.dictToId(move));
+            // Create a ::before pseudo-element
+            const beforeElement = document.createElement("div");
+            beforeElement.className = "before-element"; // Replace with your own class name
+
+            // Apply styles to the ::before element
+            beforeElement.style.content = '""';
+            beforeElement.style.position = "absolute";
+            beforeElement.style.background = "red";
+            beforeElement.style.top = "0";
+            beforeElement.style.bottom = "0";
+            beforeElement.style.left = "0";
+            beforeElement.style.right = "0";
+
+            // Append the ::before element to the sqr element
+            sqr.appendChild(beforeElement);
         });
     }
     onSquareClick(square) {
@@ -224,7 +232,7 @@ class ChessGame {
                 console.log(12);
                 return;
             }
-            square.style.color="blue";
+            
             this.showLegalMoves();
             this.clicks=1;
             return
