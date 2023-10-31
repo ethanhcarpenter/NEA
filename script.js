@@ -12,6 +12,13 @@ class ChessGame {
         this.clickedSqr;
         this.secondClickSqr;
         this.turn='w';
+        this.draggingInfo={
+            isDragging: true,
+            offsetX: 0,
+            offsetY: 0,
+            initialPosition: { x: 0, y: 0 }
+        };
+        console.log(this.draggingInfo.offsetX);
     }
     initBoard() {
         for (let row = 0; row < 8; row++) {
@@ -57,6 +64,7 @@ class ChessGame {
             newSqr.style.width = rect.width + "px";
             newSqr.style.height = rect.height + "px";
             newSqr.style.backgroundColor = "";
+            this.draggingEnable(newSqr);
             const pieceImages = {
                 'wrook': 'pieces/white-rook.png',
                 'wknight': 'pieces/white-knight.png',
@@ -82,6 +90,53 @@ class ChessGame {
             newSqr.style.backgroundSize="cover";
             chessboard.appendChild(newSqr);
         });
+    }
+    draggingEnable(sqr){
+        sqr.addEventListener('mousedown', (e) => {
+            this.draggingInfo.isDragging = true;
+        
+            // Calculate the offset relative to the middle of the div
+            const boundingBox = sqr.getBoundingClientRect();
+            const divWidth = boundingBox.width;
+            const divHeight = boundingBox.height;
+            this.draggingInfo.initialPosition = { x: boundingBox.left + divWidth / 2, y: boundingBox.top + divHeight / 2 };
+        
+            this.draggingInfo.offsetX = divWidth / 2;
+            this.draggingInfo.offsetY = divHeight / 2;
+            sqr.style.position = 'absolute';
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+            const offsetX = divWidth / 2;
+            const offsetY = divHeight / 2;
+            sqr.style.left = (e.clientX - offsetX) + 'px';
+            sqr.style.top = (e.clientY - offsetY) + 'px';
+        
+            e.preventDefault();
+        });
+
+        const onMouseMove = (e) => {
+            if (this.draggingInfo.isDragging) {
+                sqr.style.left = e.clientX - this.draggingInfo.offsetX + 'px';
+                sqr.style.top = e.clientY - this.draggingInfo.offsetY + 'px';
+            }
+        };
+        const onMouseUp = (e) => {
+            if (this.draggingInfo.isDragging) {
+                this.draggingInfo.isDragging = false;
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                console.log(2);
+                if (!isValidDrop(e.clientX, e.clientY)) {
+                    sqr.style.left = this.draggingInfo.initialPosition.x-30 + 'px';
+                    sqr.style.top = this.draggingInfo.initialPosition.y-30 + 'px';
+                }
+        
+                
+            }
+        };
+        const isValidDrop = (x, y) => {
+            return false;
+        };
     }
     setupStartingPosition() {
         this.setPiecePosition("wrook", "a1");
