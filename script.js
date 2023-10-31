@@ -1,11 +1,12 @@
 class ChessGame {
-    constructor(number) {
+    constructor(boardState) {
         
+        this.boardState=boardState;
         this.board = [];
         this.piecesPos={};
         this.initBoard();
         this.renderBoard();
-        this.updateBoard(number);
+        this.updateBoard();
         this.clicks=0;
         this.clickedPiece;
         this.clickedSqr;
@@ -130,13 +131,30 @@ class ChessGame {
     
         return pieceMap[notation] ;
     }
-    updateBoard(numbers=0){
+    updateBoard(){
         for(const key in this.piecesPos){
             const sqr=document.getElementById(this.dictToId(key));
             sqr.style.textAlign="center";
             sqr.style.color="black"; 
             const piece=this.piecesPos[key]
-            sqr.innerText=(numbers===2)?key:this.valueToCNotation(piece);
+            switch(this.boardState){
+                case 0:
+                    sqr.innerText="";
+                    break;
+                case 1:
+                    sqr.innerText=this.valueToCNotation(piece);
+                    break;
+                case 2:
+                    sqr.innerText=key;
+                    break
+                default:
+                    sqr.innerText=this.valueToCNotation(piece);
+                    break;
+                    
+            }
+            console.log(23);
+            //sqr.innerText=(this.boardState===0)?"":this.valueToCNotation(piece);
+            //sqr.innerText=(this.boardState===2)?key:this.valueToCNotation(piece);
         }
         
     }
@@ -171,21 +189,22 @@ class ChessGame {
         moves.forEach(move => {
             const sqr = document.getElementById(this.dictToId(move));
             console.log(sqr.id);
-            this.addTintToDiv(sqr,0.5,"red");
+            this.addTintToDiv(sqr,0.7,);
         
         });
     }
-    addTintToDiv(divToTint, tintOpacity, tintColor) {
+    addTintToDiv(divToTint, tintOpacity) {
         
-        // Create the tint div
-        var tintDiv = document.createElement("div");
+        const tintColor="gray";
+        const tintDiv = document.createElement("div");
         tintDiv.className = "tint-overlay"; 
         tintDiv.style.backgroundColor = tintColor//"rgba(0, 0, 0, 0.5)";
         tintDiv.style.opacity = tintOpacity; 
         tintDiv.style.borderRadius = "100%";
         tintDiv.style.position = "relative";
         tintDiv.style.textAlign="center";
-        tintDiv.style.left="10px";
+        tintDiv.style.left="15px";
+        tintDiv.style.top="15px";
         tintDiv.style.width="30px";
         tintDiv.style.height="30px";
         tintDiv.style.pointerEvents = "none"; 
@@ -199,6 +218,9 @@ class ChessGame {
             if(!this.checkMove()){
                 this.clicks=0;
                 if(this.secondClickSqr===this.clickedSqr){
+                    this.updateBoard();
+                }
+                else if(!this.getPieceAtPosition(this.secondClickSqr)){
                     this.updateBoard();
                 }
                 else if(this.getPieceAtPosition(this.secondClickSqr)){
