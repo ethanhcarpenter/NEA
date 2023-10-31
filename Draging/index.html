@@ -3,9 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Red and Blue Boxes with Draggable Image</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .red-box, .blue-box {
+            width: 200px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .red-box {
+            background-color: red;
+        }
+
+        .blue-box {
+            background-color: blue;
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    
+    <div class="red-box">
+        <div id="red-drop-box"></div>
+    </div>
+    <div class="blue-box">
+        <div id="blue-drop-box"></div>
+    </div>
+    <div class="image-container">
+        <img id="draggable-image" src="your-image.jpg" alt="Image" draggable="false">
+    </div>
+    <script>
+        const draggableImage = document.getElementById('draggable-image');
+        const redBox = document.querySelector('.red-box');
+        const blueBox = document.querySelector('.blue-box');
+
+        let isDragging = false;
+        let offsetX, offsetY;
+        let initialPosition = { x: 0, y: 0 };
+
+        draggableImage.addEventListener('mousedown', (e) => {
+            isDragging = true;
+
+            // Calculate the offset relative to the mouse click position
+            const boundingBox = draggableImage.getBoundingClientRect();
+            offsetX = e.clientX - boundingBox.left;
+            offsetY = e.clientY - boundingBox.top;
+            initialPosition = { x: e.clientX - offsetX, y: e.clientY - offsetY };
+
+            draggableImage.style.position = 'absolute';
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+
+        function onMouseMove(e) {
+            if (isDragging) {
+                // Adjust the image's position based on the offset
+                draggableImage.style.left = e.clientX - offsetX + 'px';
+                draggableImage.style.top = e.clientY - offsetY + 'px';
+            }
+        }
+
+        function onMouseUp(e) {
+            if (isDragging) {
+                isDragging = false;
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+
+                // Check if the mouse is in the red box
+                const redBoxRect = redBox.getBoundingClientRect();
+                if (
+                    e.clientX >= redBoxRect.left &&
+                    e.clientX <= redBoxRect.right &&
+                    e.clientY >= redBoxRect.top &&
+                    e.clientY <= redBoxRect.bottom
+                ) {
+                    // Snap the image to the center of the red box
+                    draggableImage.style.left = redBoxRect.left + redBoxRect.width / 2 - draggableImage.width / 2 + 'px';
+                    draggableImage.style.top = redBoxRect.top + redBoxRect.height / 2 - draggableImage.height / 2 + 'px';
+                }
+
+                // Check if the mouse is in the blue box
+                const blueBoxRect = blueBox.getBoundingClientRect();
+                if (
+                    e.clientX >= blueBoxRect.left &&
+                    e.clientX <= blueBoxRect.right &&
+                    e.clientY >= blueBoxRect.top &&
+                    e.clientY <= blueBoxRect.bottom
+                ) {
+                    // Snap the image to the center of the blue box
+                    draggableImage.style.left = blueBoxRect.left + blueBoxRect.width / 2 - draggableImage.width / 2 + 'px';
+                    draggableImage.style.top = blueBoxRect.top + blueBoxRect.height / 2 - draggableImage.height / 2 + 'px';
+                }
+            }
+        }
+    </script>
 </body>
 </html>
