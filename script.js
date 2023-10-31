@@ -41,6 +41,47 @@ class ChessGame {
                 chessboard.appendChild(square);
             }
         }
+        this.addPieces();
+    }
+    addPieces(){
+        const chessboard = document.getElementById('chessboard');
+        const squares = Array.from(chessboard.children);
+
+        squares.forEach((sqr) => {
+            const newSqr = document.createElement("div");
+            const rect = sqr.getBoundingClientRect();
+            newSqr.className="images";
+            newSqr.style.position = "absolute";
+            newSqr.style.top = rect.top + "px";
+            newSqr.style.left = rect.left + "px";
+            newSqr.style.width = rect.width + "px";
+            newSqr.style.height = rect.height + "px";
+            newSqr.style.backgroundColor = "";
+            const pieceImages = {
+                'wrook': 'pieces/white-rook.png',
+                'wknight': 'pieces/white-knight.png',
+                'wbishop': 'pieces/white-bishop.png',
+                'wqueen': 'pieces/white-queen.png',
+                'wking': 'pieces/white-king.png',
+                'wpawn': 'pieces/white-pawn.png',
+                'brook': 'pieces/black-rook.png',
+                'bknight': 'pieces/black-knight.png',
+                'bbishop': 'pieces/black-bishop.png',
+                'bqueen': 'pieces/black-queen.png',
+                'bking': 'pieces/black-king.png',
+                'bpawn': 'pieces/black-pawn.png',
+            };
+            console.log(this.getPieceAtPosition(sqr.id));
+            if(this.getPieceAtPosition(sqr.id)){
+                newSqr.style.backgroundImage=`url(${pieceImages[this.getPieceAtPosition(sqr.id)]})`;
+                if(this.getPieceAtPosition(sqr.id).includes("wpawn"))newSqr.style.backgroundImage=`url(${pieceImages["wpawn"]})`;
+                if(this.getPieceAtPosition(sqr.id).includes("bpawn"))newSqr.style.backgroundImage=`url(${pieceImages["bpawn"]})`;
+            }else{
+                newSqr.style.backgroundImage="";
+            }
+            newSqr.style.backgroundSize="cover";
+            chessboard.appendChild(newSqr);
+        });
     }
     setupStartingPosition() {
         this.setPiecePosition("wrook", "a1");
@@ -153,8 +194,7 @@ class ChessGame {
                     
             }
             console.log(23);
-            //sqr.innerText=(this.boardState===0)?"":this.valueToCNotation(piece);
-            //sqr.innerText=(this.boardState===2)?key:this.valueToCNotation(piece);
+
         }
         
     }
@@ -189,13 +229,13 @@ class ChessGame {
         moves.forEach(move => {
             const sqr = document.getElementById(this.dictToId(move));
             console.log(sqr.id);
-            this.addTintToDiv(sqr,0.7,);
+            this.addTintToDiv(sqr,0.3,);
         
         });
     }
     addTintToDiv(divToTint, tintOpacity) {
-        
-        const tintColor="gray";
+    
+        const tintColor="rgba(0,0,0,.4)";
         const tintDiv = document.createElement("div");
         tintDiv.className = "tint-overlay"; 
         tintDiv.style.backgroundColor = tintColor//"rgba(0, 0, 0, 0.5)";
@@ -203,10 +243,10 @@ class ChessGame {
         tintDiv.style.borderRadius = "100%";
         tintDiv.style.position = "relative";
         tintDiv.style.textAlign="center";
-        tintDiv.style.left="15px";
-        tintDiv.style.top="15px";
-        tintDiv.style.width="30px";
-        tintDiv.style.height="30px";
+        tintDiv.style.left="20px";
+        tintDiv.style.top="20px";
+        tintDiv.style.width="20px";
+        tintDiv.style.height="20px";
         tintDiv.style.pointerEvents = "none"; 
         divToTint.appendChild(tintDiv);
     }
@@ -469,4 +509,4 @@ class ChessGame {
     }
 }
 
-const game = new ChessGame(1);
+const game = new ChessGame(0);
