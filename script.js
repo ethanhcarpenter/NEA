@@ -18,7 +18,6 @@ class ChessGame {
             offsetY: 0,
             initialPosition: { x: 0, y: 0 }
         };
-        console.log(this.draggingInfo.offsetX);
     }
     initBoard() {
         for (let row = 0; row < 8; row++) {
@@ -58,12 +57,15 @@ class ChessGame {
             const newSqr = document.createElement("div");
             const rect = sqr.getBoundingClientRect();
             newSqr.className="images";
+            newSqr.id=sqr.id+"Piece";
             newSqr.style.position = "absolute";
             newSqr.style.top = rect.top + "px";
             newSqr.style.left = rect.left + "px";
             newSqr.style.width = rect.width + "px";
             newSqr.style.height = rect.height + "px";
             newSqr.style.backgroundColor = "";
+            // newSqr.addEventListener('click', () => this.onSquareClick(newSqr));
+
             this.draggingEnable(newSqr);
             const pieceImages = {
                 'wrook': 'pieces/white-rook.png',
@@ -79,7 +81,6 @@ class ChessGame {
                 'bking': 'pieces/black-king.png',
                 'bpawn': 'pieces/black-pawn.png',
             };
-            console.log(this.getPieceAtPosition(sqr.id));
             if(this.getPieceAtPosition(sqr.id)){
                 newSqr.style.backgroundImage=`url(${pieceImages[this.getPieceAtPosition(sqr.id)]})`;
                 if(this.getPieceAtPosition(sqr.id).includes("wpawn"))newSqr.style.backgroundImage=`url(${pieceImages["wpawn"]})`;
@@ -94,13 +95,10 @@ class ChessGame {
     draggingEnable(sqr){
         sqr.addEventListener('mousedown', (e) => {
             this.draggingInfo.isDragging = true;
-        
-            // Calculate the offset relative to the middle of the div
             const boundingBox = sqr.getBoundingClientRect();
             const divWidth = boundingBox.width;
             const divHeight = boundingBox.height;
             this.draggingInfo.initialPosition = { x: boundingBox.left + divWidth / 2, y: boundingBox.top + divHeight / 2 };
-        
             this.draggingInfo.offsetX = divWidth / 2;
             this.draggingInfo.offsetY = divHeight / 2;
             sqr.style.position = 'absolute';
@@ -110,10 +108,9 @@ class ChessGame {
             const offsetY = divHeight / 2;
             sqr.style.left = (e.clientX - offsetX) + 'px';
             sqr.style.top = (e.clientY - offsetY) + 'px';
-        
             e.preventDefault();
+            this.onSquareClick(sqr);
         });
-
         const onMouseMove = (e) => {
             if (this.draggingInfo.isDragging) {
                 sqr.style.left = e.clientX - this.draggingInfo.offsetX + 'px';
@@ -125,7 +122,6 @@ class ChessGame {
                 this.draggingInfo.isDragging = false;
                 document.removeEventListener('mousemove', onMouseMove);
                 document.removeEventListener('mouseup', onMouseUp);
-                console.log(2);
                 if (!isValidDrop(e.clientX, e.clientY)) {
                     sqr.style.left = this.draggingInfo.initialPosition.x-30 + 'px';
                     sqr.style.top = this.draggingInfo.initialPosition.y-30 + 'px';
@@ -186,19 +182,6 @@ class ChessGame {
         const row = parseInt(id[1]);
         return [col, row];
     }
-    outSquareInfo(square){
-        console.clear();
-        console.log(`Clicked on square at row ${square.id} `);
-        console.log(this.getPieceAtPosition(square.id))
-        console.log(this.clickedPiece)
-    }
-    outPiecesPos(){
-        for (let i = 0; i < 8; i++) {
-            for (let x = 1; x < 9; x++) {
-                console.log(this.piecesPos[i*8+x])
-            }
-        }
-    }
     idToDict(id){
         const[col,row]=this.idToGrid(id);
         return ((row-1)*8+col)
@@ -248,7 +231,6 @@ class ChessGame {
                     break;
                     
             }
-            console.log(23);
 
         }
         
@@ -306,57 +288,93 @@ class ChessGame {
         divToTint.appendChild(tintDiv);
     }
     onSquareClick(square) {
+        // Call a tester function (you can provide a description here)
         this.testerFunc();
-        
-        if(this.clicks===1){
-            this.secondClickSqr=square.id;
-            if(!this.checkMove()){
-                this.clicks=0;
-                if(this.secondClickSqr===this.clickedSqr){
-                    this.updateBoard();
-                }
-                else if(!this.getPieceAtPosition(this.secondClickSqr)){
-                    this.updateBoard();
-                }
-                else if(this.getPieceAtPosition(this.secondClickSqr)){
-                    this.updateBoard();
-                    if(!(this.turn===this.getPieceAtPosition(this.secondClickSqr)[0])){
-                        return;
-                    }
-                    this.updateBoard();
-                    this.clicks=1;
-                    this.clickedPiece=this.getPieceAtPosition(this.secondClickSqr)
-                    this.clickedSqr=this.secondClickSqr;
-                    const sqr=document.getElementById(this.secondClickSqr);
-                    sqr.style.color="blue";
-                    this.showLegalMoves();
-                    return;
-                }
-                this.clickedPiece=null;
-                this.clickedSqr=null;
-                
-                return;
-            }
-            this.setPiecePosition(this.clickedPiece,this.secondClickSqr)
-            this.setPiecePosition(null,this.clickedSqr)
-            this.updateBoard();
-            this.turn=(this.turn==='w')?'b':'w';
-            this.clicks=0
+      
+        // Extract the first two characters from the square's ID
+        const id = square.id.substring(0, 2);
+      
+        // If it's the first click
+        if (this.clicks === 0) {
+          // Check if there's a piece on the clicked square
+          if (!this.getPieceAtPosition(id)) return;
+      
+          // Set the selected piece and square for the first click
+          this.clickedPiece = this.getPieceAtPosition(id);
+          this.clickedSqr = id;
+      
+          // Check if it's the current player's piece
+          if (!(this.turn === this.getPieceAtPosition(this.clickedSqr)[0])) {
+            return;
+          }
+      
+          // Log the ID of the clicked square (you can provide more context here)
+          console.log(id);
+      
+          // Show the legal moves for the selected piece
+          this.showLegalMoves();
+      
+          // Set the state for the second click
+          this.clicks = 1;
         }
-        else if(this.clicks===0){
-            if(!this.getPieceAtPosition(square.id)) return;
-            this.clickedPiece=this.getPieceAtPosition(square.id);
-            this.clickedSqr=square.id;
-            if(!(this.turn===this.getPieceAtPosition(this.clickedSqr)[0])){
-                return;
+        // If it's the second click
+        else if (this.clicks === 1) {
+          // Store the second clicked square's ID
+          this.secondClickSqr = id;
+      
+          // Check if the move is valid
+          if (!this.checkMove()) {
+            // Reset the state and update the board if the move is invalid
+            this.clicks = 0;
+      
+            // If the second click is the same as the first, just update the board
+            if (this.secondClickSqr === this.clickedSqr) {
+              this.updateBoard();
             }
-            square.style.color="blue";
-            this.showLegalMoves();
-            this.clicks=1;
-            return
+            // If the second click is an empty square, update the board
+            else if (!this.getPieceAtPosition(this.secondClickSqr)) {
+              this.updateBoard();
+            }
+            // If the second click has an opponent's piece
+            else if (this.getPieceAtPosition(this.secondClickSqr)) {
+              this.updateBoard();
+      
+              // Check if it's the opponent's turn
+              if (!(this.turn === this.getPieceAtPosition(this.secondClickSqr)[0])) {
+                return;
+              }
+      
+              this.updateBoard();
+              this.clicks = 0;
+              this.clickedPiece = this.getPieceAtPosition(this.secondClickSqr);
+              this.clickedSqr = this.secondClickSqr;
+      
+              // Highlight the selected square
+              const sqr = document.getElementById(this.secondClickSqr);
+              sqr.style.color = "blue";
+      
+              // Show the legal moves for the selected piece
+              this.showLegalMoves();
+              return;
+            }
+      
+            // Reset the state
+            this.clickedPiece = null;
+            this.clickedSqr = null;
+            return;
+          }
+      
+          // If the move is valid, update the piece's position and switch turns
+          this.setPiecePosition(this.clickedPiece, this.secondClickSqr);
+          this.setPiecePosition(null, this.clickedSqr);
+          this.updateBoard();
+      
+          // Switch the turn to the opposite player
+          this.turn = (this.turn === 'w') ? 'b' : 'w';
+          this.clicks = 0;
         }
-        
-    }
+      }
+      
     checkMove(){
         const secondSqr=this.idToDict(this.secondClickSqr);
         const position=this.idToDict(this.clickedSqr);
@@ -564,4 +582,4 @@ class ChessGame {
     }
 }
 
-const game = new ChessGame(0);
+const game = new ChessGame(1);
