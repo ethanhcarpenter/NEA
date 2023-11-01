@@ -151,7 +151,7 @@ class ChessGame {
             return false;
         };
         
-        
+        if(!a)return;
         if((a[0]===this.turn))sqr.addEventListener('mousedown',this.mouseDownFuc );
         if(!(a[0]===this.turn))this.removeDragger(sqr);
     }
@@ -172,7 +172,7 @@ class ChessGame {
         this.setPiecePosition("bbishop", "f8");
         this.setPiecePosition("bqueen", "d8");
         this.setPiecePosition("bking", "e8");
-        const alphabet="abcdefgh";
+         const alphabet="abcdefgh";
         for (let col = 1; col <= 8; col++) {
             this.setPiecePosition("wpawn"+`${col}`, `${alphabet[col - 1]}2`);
         }
@@ -184,6 +184,10 @@ class ChessGame {
                 this.setPiecePosition(null, `${alphabet[col - 1]}${row}`);
             }
         }
+        this.setPiecePosition("bbishop", "b4");
+        this.setPiecePosition("wbishop", "a4");
+        this.setPiecePosition("bbishop", "b5");
+        this.setPiecePosition("wbishop", "a5");
         
     }
     isOdd(n){
@@ -537,55 +541,42 @@ class ChessGame {
     }
     bishop(b, position, white) {
         const legal = [];
-        const nw = [];
-        const ne = [];
-        const sw = [];
-        const se = [];
-        const pseudoLegal = [nw, ne, sw, se];
-        let move = position;
+        const deltas = [-9, -7, 7, 9]; // Deltas for northwest, northeast, southwest, southeast
       
-        while (move % 8 !== 1 && move > 0) {
-          nw.push(move);
-          move -= 7;
+        for (const delta of deltas) {
+          legal.push(...getDiagonalMoves(b, position, delta, white));
         }
-        move = position;
       
-        while (move % 8 !== 0 && move > 0) {
-          ne.push(move);
-          move -= 9;
-        }
-        move = position;
-        while (move % 8 !== 1 && move < 65) {
-          sw.push(move);
-          move += 9;
-        }
-        move = position;
-        while (move % 8 !== 0 && move < 65) {
-          se.push(move);
-          move += 7;
-        }
-        nw.splice(nw.indexOf(position), 1);
-        ne.splice(ne.indexOf(position), 1);
-        sw.splice(sw.indexOf(position), 1);
-        se.splice(se.indexOf(position), 1);
-        for (const array of pseudoLegal) {
-          for (const pos of array) {
-            if (!b[pos]) {
-              legal.push(pos);
-            } else {
-              const takeable = white ? b[pos][0] === 'b' : b[pos][0] === 'w';
-              if (takeable) {
-                legal.push(pos);
-                break;
-              }
-              const stop = white ? b[pos][0] === 'w' : b[pos][0] === 'b';
-              if (stop) break;
+        return legal;
+      }
+      
+    getDiagonalMoves(b, position, delta, white) {
+        const legal = [];
+        let currentPos = position + delta;
+      
+        while (currentPos >= 1 && currentPos <= 64 && isSameDiagonal(position, currentPos)) {
+          if (b[currentPos]) {
+            if ((white && b[currentPos][0] === 'b') || (!white && b[currentPos][0] === 'w')) {
+              // Opponent's piece, add to legal moves and stop
+              legal.push(currentPos);
             }
+            break; // Stop searching in this direction
+          } else {
+            // Empty square, add to legal moves and continue
+            legal.push(currentPos);
+            currentPos += delta;
           }
         }
       
         return legal;
-    }
+      }
+      
+    isSameDiagonal(position1, position2) {
+        // Check if two positions are on the same diagonal
+        const colDiff = Math.abs((position1 - 1) % 8 - (position2 - 1) % 8);
+        const rowDiff = Math.abs(Math.floor((position1 - 1) / 8) - Math.floor((position2 - 1) / 8));
+        return colDiff === rowDiff;
+      }
     knight(b, position, white) {
         const legal = [];
         const moves = [-17, -15, -10, -6, 6, 10, 15, 17];
