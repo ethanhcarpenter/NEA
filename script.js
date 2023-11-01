@@ -385,7 +385,7 @@ class ChessGame {
           this.secondClickSqr = id;
       
           // Check if the move is valid
-          if (!this.checkMove(id,this.clickedPiece)) {
+          if (!this.checkMove(id,this.clickedSqr)) {
             // Reset the state and update the board if the move is invalid
             this.clicks = 0;
       
@@ -431,48 +431,50 @@ class ChessGame {
           this.setPiecePosition(null, this.clickedSqr);
           this.updateBoard();
       
+          const a=(this.turn==="w")?true:false;
+          this.isCheck(a);
           // Switch the turn to the opposite player
           this.turn = (this.turn === 'w') ? 'b' : 'w';
           this.updateDrag();
           this.clicks = 0;
         
     } 
-    checkMove(id,clickedPiece){
-        const secondSqr=this.idToDict(id);
-        const position=this.idToDict(this.clickedSqr);
+    checkMove(secondClickedSqr,clickedSqr){
+        const clickedPiece=this.getPieceAtPosition(clickedSqr);
+        const secondSqr=this.idToDict(secondClickedSqr);
+        const position=this.idToDict(clickedSqr);
         if(clickedPiece.includes("pawn")){
             const white=(clickedPiece[0]==='w')?true:false;
             const moves=this.pawn(this.piecesPos,position,white);
-            if(moves.includes(secondSqr))return true;
+            if(!moves.includes(secondSqr))return false;
         }
         if(clickedPiece.includes("knight")){
             const white=(clickedPiece[0]==='w')?true:false;
             const moves=this.knight(this.piecesPos,position,white);
-            if(moves.includes(secondSqr))return true;
+            if(!moves.includes(secondSqr))return false;
         }
         if(clickedPiece.includes("bishop")){
             const white=(clickedPiece[0]==='w')?true:false;
             const moves=this.bishop(this.piecesPos,position,white);
-            if(moves.includes(secondSqr))return true;
+            if(!moves.includes(secondSqr))return false;
         }
         if(clickedPiece.includes("rook")){
             const white=(clickedPiece[0]==='w')?true:false;
             const moves=this.rook(this.piecesPos,position,white);
-            if(moves.includes(secondSqr))return true;
+            if(!moves.includes(secondSqr))return false;
         }
         if(clickedPiece.includes("queen")){
             const white=(clickedPiece[0]==='w')?true:false;
             const moves=this.queen(this.piecesPos,position,white);
-            if(moves.includes(secondSqr))return true;
+            if(!moves.includes(secondSqr))return false;
         }
         if(clickedPiece.includes("king")){
             const white=(clickedPiece[0]==='w')?true:false;
             const moves=this.king(this.piecesPos,position,white);
-            if(moves.includes(secondSqr))return true;
+            if(!moves.includes(secondSqr))return false;
         }
-            
-        
-        return false;
+
+        return true;
         
     }
     pawn(b,position,white){
@@ -638,6 +640,25 @@ class ChessGame {
         }
       
         return legal;
+    }
+    findPositionByPiece(targetPiece) {
+        const position = Object.keys(this.piecesPos);
+        for (const pos in position) {
+            if (this.piecesPos[pos] === targetPiece) {
+                return pos;
+            }
+        }
+    }
+    isCheck(white){
+        const squares = Object.keys(this.piecesPos);
+        const kingPos=(white)?this.findPositionByPiece("bking"):this.findPositionByPiece("wking");
+        console.log(kingPos);
+        squares.forEach((key)=>{
+            const value=this.piecesPos[key];
+            if(value===null)return;
+            const a=this.checkMove(this.dictToId(kingPos),this.dictToId(key))
+            if(a)console.log(a);
+        });
     }
     testerFunc(){
         
