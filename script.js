@@ -151,7 +151,7 @@ class ChessGame {
             return false;
         };
         
-        if(!a)return;
+        
         if((a[0]===this.turn))sqr.addEventListener('mousedown',this.mouseDownFuc );
         if(!(a[0]===this.turn))this.removeDragger(sqr);
     }
@@ -172,7 +172,7 @@ class ChessGame {
         this.setPiecePosition("bbishop", "f8");
         this.setPiecePosition("bqueen", "d8");
         this.setPiecePosition("bking", "e8");
-         const alphabet="abcdefgh";
+        const alphabet="abcdefgh";
         for (let col = 1; col <= 8; col++) {
             this.setPiecePosition("wpawn"+`${col}`, `${alphabet[col - 1]}2`);
         }
@@ -184,7 +184,6 @@ class ChessGame {
                 this.setPiecePosition(null, `${alphabet[col - 1]}${row}`);
             }
         }
-
         
     }
     isOdd(n){
@@ -543,38 +542,50 @@ class ChessGame {
         const sw = [];
         const se = [];
         const pseudoLegal = [nw, ne, sw, se];
+        let move = position;
       
-        const row = 8 - Math.floor((position - 1) / 8);
-        const col = (position - 1) % 8;
-      
-        // Calculate diagonal moves
-        for (let i = 1; i < 9; i++) {
-          if (row - i >= 0 && col - i >= 0) nw.push(position - 9 * i);
-          if (row - i >= 0 && col + i < 8) ne.push(position - 7 * i);
-          if (row + i < 8 && col - i >= 0) sw.push(position + 7 * i);
-          if (row + i < 8 && col + i < 8) se.push(position + 9 * i);
+        while (move % 8 !== 0 && move < 65) {
+          nw.push(move);
+          move += 7;
         }
-      
+        move = position;
+        
+        while (move % 8 !== 1 && move < 65) {
+            ne.push(move);
+            move += 9;
+        }
+        move = position;
+        while (move % 8 !== 1 && move > 0) {
+            sw.push(move);
+            move -= 9;
+        }
+        move = position;
+        while (move % 8 !== 0 && move > 0) {
+            se.push(move);
+            move -= 7;
+        }
+        nw.splice(nw.indexOf(position), 1);
+        ne.splice(ne.indexOf(position), 1);
+        sw.splice(sw.indexOf(position), 1);
+        se.splice(se.indexOf(position), 1);
         for (const array of pseudoLegal) {
           for (const pos of array) {
-            if (pos >= 1 && pos <= 64) {
-              if (!b[pos]) {
+            if (!b[pos]) {
+              legal.push(pos);
+            } else {
+              const takeable = white ? b[pos][0] === 'b' : b[pos][0] === 'w';
+              if (takeable) {
                 legal.push(pos);
-              } else {
-                const takeable = white ? b[pos][0] === 'b' : b[pos][0] === 'w';
-                if (takeable) legal.push(pos);
                 break;
               }
-            } else {
-              break;
+              const stop = white ? b[pos][0] === 'w' : b[pos][0] === 'b';
+              if (stop) break;
             }
           }
         }
       
         return legal;
       }
-      
-      
     knight(b, position, white) {
         const legal = [];
         const moves = [-17, -15, -10, -6, 6, 10, 15, 17];
