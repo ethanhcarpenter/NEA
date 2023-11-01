@@ -184,10 +184,7 @@ class ChessGame {
                 this.setPiecePosition(null, `${alphabet[col - 1]}${row}`);
             }
         }
-        this.setPiecePosition("bbishop", "b4");
-        this.setPiecePosition("wbishop", "a4");
-        this.setPiecePosition("bbishop", "b5");
-        this.setPiecePosition("wbishop", "a5");
+
         
     }
     isOdd(n){
@@ -541,42 +538,43 @@ class ChessGame {
     }
     bishop(b, position, white) {
         const legal = [];
-        const deltas = [-9, -7, 7, 9]; // Deltas for northwest, northeast, southwest, southeast
+        const nw = [];
+        const ne = [];
+        const sw = [];
+        const se = [];
+        const pseudoLegal = [nw, ne, sw, se];
       
-        for (const delta of deltas) {
-          legal.push(...getDiagonalMoves(b, position, delta, white));
+        const row = 8 - Math.floor((position - 1) / 8);
+        const col = (position - 1) % 8;
+      
+        // Calculate diagonal moves
+        for (let i = 1; i < 9; i++) {
+          if (row - i >= 0 && col - i >= 0) nw.push(position - 9 * i);
+          if (row - i >= 0 && col + i < 8) ne.push(position - 7 * i);
+          if (row + i < 8 && col - i >= 0) sw.push(position + 7 * i);
+          if (row + i < 8 && col + i < 8) se.push(position + 9 * i);
         }
       
-        return legal;
-      }
-      
-    getDiagonalMoves(b, position, delta, white) {
-        const legal = [];
-        let currentPos = position + delta;
-      
-        while (currentPos >= 1 && currentPos <= 64 && isSameDiagonal(position, currentPos)) {
-          if (b[currentPos]) {
-            if ((white && b[currentPos][0] === 'b') || (!white && b[currentPos][0] === 'w')) {
-              // Opponent's piece, add to legal moves and stop
-              legal.push(currentPos);
+        for (const array of pseudoLegal) {
+          for (const pos of array) {
+            if (pos >= 1 && pos <= 64) {
+              if (!b[pos]) {
+                legal.push(pos);
+              } else {
+                const takeable = white ? b[pos][0] === 'b' : b[pos][0] === 'w';
+                if (takeable) legal.push(pos);
+                break;
+              }
+            } else {
+              break;
             }
-            break; // Stop searching in this direction
-          } else {
-            // Empty square, add to legal moves and continue
-            legal.push(currentPos);
-            currentPos += delta;
           }
         }
       
         return legal;
       }
       
-    isSameDiagonal(position1, position2) {
-        // Check if two positions are on the same diagonal
-        const colDiff = Math.abs((position1 - 1) % 8 - (position2 - 1) % 8);
-        const rowDiff = Math.abs(Math.floor((position1 - 1) / 8) - Math.floor((position2 - 1) / 8));
-        return colDiff === rowDiff;
-      }
+      
     knight(b, position, white) {
         const legal = [];
         const moves = [-17, -15, -10, -6, 6, 10, 15, 17];
