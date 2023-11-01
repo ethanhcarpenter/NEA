@@ -4,14 +4,17 @@ class ChessGame {
         this.boardState=boardState;
         this.board = [];
         this.piecesPos={};
+        this.imageSquares=[];
         this.initBoard();
         this.renderBoard();
         this.updateBoard();
         this.clicks=0;
+        this.legalMoves=[];
         this.clickedPiece;
         this.clickedSqr;
         this.secondClickSqr;
-        this.turn='w';
+        this.turn;
+        this.mouseDownFuc;//Because why make life easy?????????????? ffs
         this.draggingInfo={
             isDragging: true,
             offsetX: 0,
@@ -20,6 +23,7 @@ class ChessGame {
         };
     }
     initBoard() {
+        this.turn='w'
         for (let row = 0; row < 8; row++) {
             this.board[row] = [];
             for (let col = 0; col < 8; col++) {
@@ -43,7 +47,7 @@ class ChessGame {
                 else square.className='white';
                 square.style.userSelect="none";
                 square.textContent = this.board[row-1][col-1] || '';
-                square.addEventListener('click', () => this.onSquareClick(square));
+                // square.addEventListener('click', () => this.onSquareClick(square));
                 chessboard.appendChild(square);
             }
         }
@@ -52,7 +56,20 @@ class ChessGame {
     addPieces(){
         const chessboard = document.getElementById('chessboard');
         const squares = Array.from(chessboard.children);
-
+        const pieceImages = {
+            'wrook': 'pieces/white-rook.png',
+            'wknight': 'pieces/white-knight.png',
+            'wbishop': 'pieces/white-bishop.png',
+            'wqueen': 'pieces/white-queen.png',
+            'wking': 'pieces/white-king.png',
+            'wpawn': 'pieces/white-pawn.png',
+            'brook': 'pieces/black-rook.png',
+            'bknight': 'pieces/black-knight.png',
+            'bbishop': 'pieces/black-bishop.png',
+            'bqueen': 'pieces/black-queen.png',
+            'bking': 'pieces/black-king.png',
+            'bpawn': 'pieces/black-pawn.png',
+        };
         squares.forEach((sqr) => {
             const newSqr = document.createElement("div");
             const rect = sqr.getBoundingClientRect();
@@ -65,22 +82,8 @@ class ChessGame {
             newSqr.style.height = rect.height + "px";
             newSqr.style.backgroundColor = "";
             // newSqr.addEventListener('click', () => this.onSquareClick(newSqr));
-
-            this.draggingEnable(newSqr);
-            const pieceImages = {
-                'wrook': 'pieces/white-rook.png',
-                'wknight': 'pieces/white-knight.png',
-                'wbishop': 'pieces/white-bishop.png',
-                'wqueen': 'pieces/white-queen.png',
-                'wking': 'pieces/white-king.png',
-                'wpawn': 'pieces/white-pawn.png',
-                'brook': 'pieces/black-rook.png',
-                'bknight': 'pieces/black-knight.png',
-                'bbishop': 'pieces/black-bishop.png',
-                'bqueen': 'pieces/black-queen.png',
-                'bking': 'pieces/black-king.png',
-                'bpawn': 'pieces/black-pawn.png',
-            };
+            
+            
             if(this.getPieceAtPosition(sqr.id)){
                 newSqr.style.backgroundImage=`url(${pieceImages[this.getPieceAtPosition(sqr.id)]})`;
                 if(this.getPieceAtPosition(sqr.id).includes("wpawn"))newSqr.style.backgroundImage=`url(${pieceImages["wpawn"]})`;
@@ -89,11 +92,21 @@ class ChessGame {
                 newSqr.style.backgroundImage="";
             }
             newSqr.style.backgroundSize="cover";
+            this.imageSquares.push(newSqr);
             chessboard.appendChild(newSqr);
+            this.draggingEnable(newSqr);
         });
     }
+    removeDragger(sqr){
+        const newElement = sqr.cloneNode(true);
+        sqr.parentNode.replaceChild(newElement, sqr);
+    }
     draggingEnable(sqr){
-        sqr.addEventListener('mousedown', (e) => {
+        const a=this.getPieceAtPosition(sqr.id.substring(0,2))
+        if(a===null)return;
+        this.mouseDownFuc=(e) => {
+            
+            if(!this.getPieceAtPosition(sqr.id.substring(0,2))[0]===this.turn)return;
             this.draggingInfo.isDragging = true;
             const boundingBox = sqr.getBoundingClientRect();
             const divWidth = boundingBox.width;
@@ -109,8 +122,8 @@ class ChessGame {
             sqr.style.left = (e.clientX - offsetX) + 'px';
             sqr.style.top = (e.clientY - offsetY) + 'px';
             e.preventDefault();
-            this.onSquareClick(sqr);
-        });
+            this.onSquareDown(sqr);
+        };
         const onMouseMove = (e) => {
             if (this.draggingInfo.isDragging) {
                 sqr.style.left = e.clientX - this.draggingInfo.offsetX + 'px';
@@ -118,21 +131,29 @@ class ChessGame {
             }
         };
         const onMouseUp = (e) => {
+            
             if (this.draggingInfo.isDragging) {
                 this.draggingInfo.isDragging = false;
                 document.removeEventListener('mousemove', onMouseMove);
                 document.removeEventListener('mouseup', onMouseUp);
+                
                 if (!isValidDrop(e.clientX, e.clientY)) {
                     sqr.style.left = this.draggingInfo.initialPosition.x-30 + 'px';
                     sqr.style.top = this.draggingInfo.initialPosition.y-30 + 'px';
                 }
-        
+                const elementUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
+                
+                this.onSquareUp(elementUnderMouse)
                 
             }
         };
         const isValidDrop = (x, y) => {
             return false;
         };
+        
+        
+        if((a[0]===this.turn))sqr.addEventListener('mousedown',this.mouseDownFuc );
+        if(!(a[0]===this.turn))this.removeDragger(sqr);
     }
     setupStartingPosition() {
         this.setPiecePosition("wrook", "a1");
@@ -233,9 +254,43 @@ class ChessGame {
             }
 
         }
+        const squares = Array.from(chessboard.children);
+        const pieceImages = {
+            'wrook': 'pieces/white-rook.png',
+            'wknight': 'pieces/white-knight.png',
+            'wbishop': 'pieces/white-bishop.png',
+            'wqueen': 'pieces/white-queen.png',
+            'wking': 'pieces/white-king.png',
+            'wpawn': 'pieces/white-pawn.png',
+            'brook': 'pieces/black-rook.png',
+            'bknight': 'pieces/black-knight.png',
+            'bbishop': 'pieces/black-bishop.png',
+            'bqueen': 'pieces/black-queen.png',
+            'bking': 'pieces/black-king.png',
+            'bpawn': 'pieces/black-pawn.png',
+        };
+        squares.forEach((sqr) => {
+            if(sqr.id.length===2)return;
+            else if(this.getPieceAtPosition(sqr.id.substring(0,2))){
+                sqr.style.backgroundImage=`url(${pieceImages[this.getPieceAtPosition(sqr.id)]})`;
+                if(this.getPieceAtPosition(sqr.id).includes("wpawn"))sqr.style.backgroundImage=`url(${pieceImages["wpawn"]})`;
+                if(this.getPieceAtPosition(sqr.id).includes("bpawn"))sqr.style.backgroundImage=`url(${pieceImages["bpawn"]})`;
+            }else{
+                sqr.style.backgroundImage="";
+            }
+            
+        });
+        
         
     }
-    showLegalMoves(){
+    updateDrag(){
+        const squares = Array.from(chessboard.children);
+        squares.forEach((sqr) => {
+            if(sqr.id.length===2)return;
+            this.draggingEnable(sqr);
+        });
+    }
+    showLegalMoves(bool=false){
         let moves=[];
         const position=this.idToDict(this.clickedSqr);
         if(this.clickedPiece.includes("pawn")){
@@ -263,11 +318,12 @@ class ChessGame {
             const white=(this.clickedPiece[0]==='w')?true:false;
             moves=this.king(this.piecesPos,position,white);
         }
-        moves.forEach(move => {
-            const sqr = document.getElementById(this.dictToId(move));
-            console.log(sqr.id);
-            this.addTintToDiv(sqr,0.3,);
         
+        moves.forEach(move => {
+            if(bool===false){
+                const sqr = document.getElementById(this.dictToId(move));
+                this.addTintToDiv(sqr,0.3,);
+            }else this.legalMoves.push(move);
         });
     }
     addTintToDiv(divToTint, tintOpacity) {
@@ -287,43 +343,49 @@ class ChessGame {
         tintDiv.style.pointerEvents = "none"; 
         divToTint.appendChild(tintDiv);
     }
-    onSquareClick(square) {
+    onSquareDown(square) {
+        // Call a tester function (you can provide a description here)
+        this.testerFunc();
+
+        // Extract the first two characters from the square's ID
+        const id = square.id.substring(0, 2);
+
+        // Check if there's a piece on the clicked square
+        if (!this.getPieceAtPosition(id)) return;
+
+        // Set the selected piece and square for the first click
+        this.clickedPiece = this.getPieceAtPosition(id);
+        this.clickedSqr = id;
+
+        // Check if it's the current player's piece
+        if (!(this.turn === this.getPieceAtPosition(this.clickedSqr)[0])) {
+            return;
+        }
+
+        // Log the ID of the clicked square (you can provide more context here)
+        
+
+        // Show the legal moves for the selected piece
+        this.showLegalMoves();
+
+        // Set the state for the second click
+        this.clicks = 1;
+        
+
+    }
+    onSquareUp(square) {
         // Call a tester function (you can provide a description here)
         this.testerFunc();
       
         // Extract the first two characters from the square's ID
         const id = square.id.substring(0, 2);
-      
-        // If it's the first click
-        if (this.clicks === 0) {
-          // Check if there's a piece on the clicked square
-          if (!this.getPieceAtPosition(id)) return;
-      
-          // Set the selected piece and square for the first click
-          this.clickedPiece = this.getPieceAtPosition(id);
-          this.clickedSqr = id;
-      
-          // Check if it's the current player's piece
-          if (!(this.turn === this.getPieceAtPosition(this.clickedSqr)[0])) {
-            return;
-          }
-      
-          // Log the ID of the clicked square (you can provide more context here)
-          console.log(id);
-      
-          // Show the legal moves for the selected piece
-          this.showLegalMoves();
-      
-          // Set the state for the second click
-          this.clicks = 1;
-        }
-        // If it's the second click
-        else if (this.clicks === 1) {
+    
+
           // Store the second clicked square's ID
           this.secondClickSqr = id;
       
           // Check if the move is valid
-          if (!this.checkMove()) {
+          if (!this.checkMove(id,this.clickedPiece)) {
             // Reset the state and update the board if the move is invalid
             this.clicks = 0;
       
@@ -343,7 +405,7 @@ class ChessGame {
               if (!(this.turn === this.getPieceAtPosition(this.secondClickSqr)[0])) {
                 return;
               }
-      
+              
               this.updateBoard();
               this.clicks = 0;
               this.clickedPiece = this.getPieceAtPosition(this.secondClickSqr);
@@ -371,40 +433,40 @@ class ChessGame {
       
           // Switch the turn to the opposite player
           this.turn = (this.turn === 'w') ? 'b' : 'w';
+          this.updateDrag();
           this.clicks = 0;
-        }
-      }
-      
-    checkMove(){
-        const secondSqr=this.idToDict(this.secondClickSqr);
+        
+    } 
+    checkMove(id,clickedPiece){
+        const secondSqr=this.idToDict(id);
         const position=this.idToDict(this.clickedSqr);
-        if(this.clickedPiece.includes("pawn")){
-            const white=(this.clickedPiece[0]==='w')?true:false;
+        if(clickedPiece.includes("pawn")){
+            const white=(clickedPiece[0]==='w')?true:false;
             const moves=this.pawn(this.piecesPos,position,white);
             if(moves.includes(secondSqr))return true;
         }
-        if(this.clickedPiece.includes("knight")){
-            const white=(this.clickedPiece[0]==='w')?true:false;
+        if(clickedPiece.includes("knight")){
+            const white=(clickedPiece[0]==='w')?true:false;
             const moves=this.knight(this.piecesPos,position,white);
             if(moves.includes(secondSqr))return true;
         }
-        if(this.clickedPiece.includes("bishop")){
-            const white=(this.clickedPiece[0]==='w')?true:false;
+        if(clickedPiece.includes("bishop")){
+            const white=(clickedPiece[0]==='w')?true:false;
             const moves=this.bishop(this.piecesPos,position,white);
             if(moves.includes(secondSqr))return true;
         }
-        if(this.clickedPiece.includes("rook")){
-            const white=(this.clickedPiece[0]==='w')?true:false;
+        if(clickedPiece.includes("rook")){
+            const white=(clickedPiece[0]==='w')?true:false;
             const moves=this.rook(this.piecesPos,position,white);
             if(moves.includes(secondSqr))return true;
         }
-        if(this.clickedPiece.includes("queen")){
-            const white=(this.clickedPiece[0]==='w')?true:false;
+        if(clickedPiece.includes("queen")){
+            const white=(clickedPiece[0]==='w')?true:false;
             const moves=this.queen(this.piecesPos,position,white);
             if(moves.includes(secondSqr))return true;
         }
-        if(this.clickedPiece.includes("king")){
-            const white=(this.clickedPiece[0]==='w')?true:false;
+        if(clickedPiece.includes("king")){
+            const white=(clickedPiece[0]==='w')?true:false;
             const moves=this.king(this.piecesPos,position,white);
             if(moves.includes(secondSqr))return true;
         }
@@ -582,4 +644,4 @@ class ChessGame {
     }
 }
 
-const game = new ChessGame(1);
+const game = new ChessGame(0);
