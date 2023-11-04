@@ -1,87 +1,38 @@
-function onSquareClick(square) {
-    // Call a tester function (you can provide a description here)
-    this.testerFunc();
-  
-    // Extract the first two characters from the square's ID
-    const id = square.id.substring(0, 2);
-  
-    // If it's the first click
-    if (this.clicks === 0) {
-      // Check if there's a piece on the clicked square
-      if (!this.getPieceAtPosition(id)) return;
-  
-      // Set the selected piece and square for the first click
-      this.clickedPiece = this.getPieceAtPosition(id);
-      this.clickedSqr = id;
-  
-      // Check if it's the current player's piece
-      if (!(this.turn === this.getPieceAtPosition(this.clickedSqr)[0])) {
-        return;
+const allBishopMoves = {};
+
+// Loop through each square on the chessboard
+for (let file = 'a'.charCodeAt(0); file <= 'h'.charCodeAt(0); file++) {
+  for (let rank = 1; rank <= 8; rank++) {
+    const square = String.fromCharCode(file) + rank;
+    allBishopMoves[square] = {
+      ne: [],
+      se: [],
+      sw: [],
+      nw: []
+    };
+
+    // Calculate bishop moves for each direction
+    for (let i = 1; i <= 7; i++) {
+      // Northeast direction
+      if (file + i <= 'h'.charCodeAt(0) && rank + i <= 8) {
+        allBishopMoves[square].ne.push(String.fromCharCode(file + i) + (rank + i));
       }
-  
-      // Log the ID of the clicked square (you can provide more context here)
-      console.log(id);
-  
-      // Show the legal moves for the selected piece
-      this.showLegalMoves();
-  
-      // Set the state for the second click
-      this.clicks = 1;
-    }
-    // If it's the second click
-    else if (this.clicks === 1) {
-      // Store the second clicked square's ID
-      this.secondClickSqr = id;
-  
-      // Check if the move is valid
-      if (!this.checkMove()) {
-        // Reset the state and update the board if the move is invalid
-        this.clicks = 0;
-  
-        // If the second click is the same as the first, just update the board
-        if (this.secondClickSqr === this.clickedSqr) {
-          this.updateBoard();
-        }
-        // If the second click is an empty square, update the board
-        else if (!this.getPieceAtPosition(this.secondClickSqr)) {
-          this.updateBoard();
-        }
-        // If the second click has an opponent's piece
-        else if (this.getPieceAtPosition(this.secondClickSqr)) {
-          this.updateBoard();
-  
-          // Check if it's the opponent's turn
-          if (!(this.turn === this.getPieceAtPosition(this.secondClickSqr)[0])) {
-            return;
-          }
-  
-          this.updateBoard();
-          this.clicks = 0;
-          this.clickedPiece = this.getPieceAtPosition(this.secondClickSqr);
-          this.clickedSqr = this.secondClickSqr;
-  
-          // Highlight the selected square
-          const sqr = document.getElementById(this.secondClickSqr);
-          sqr.style.color = "blue";
-  
-          // Show the legal moves for the selected piece
-          this.showLegalMoves();
-          return;
-        }
-  
-        // Reset the state
-        this.clickedPiece = null;
-        this.clickedSqr = null;
-        return;
+      // Southeast direction
+      if (file + i <= 'h'.charCodeAt(0) && rank - i >= 1) {
+        allBishopMoves[square].se.push(String.fromCharCode(file + i) + (rank - i));
       }
-  
-      // If the move is valid, update the piece's position and switch turns
-      this.setPiecePosition(this.clickedPiece, this.secondClickSqr);
-      this.setPiecePosition(null, this.clickedSqr);
-      this.updateBoard();
-  
-      // Switch the turn to the opposite player
-      this.turn = (this.turn === 'w') ? 'b' : 'w';
-      this.clicks = 0;
+      // Southwest direction
+      if (file - i >= 'a'.charCodeAt(0) && rank - i >= 1) {
+        allBishopMoves[square].sw.push(String.fromCharCode(file - i) + (rank - i));
+      }
+      // Northwest direction
+      if (file - i >= 'a'.charCodeAt(0) && rank + i <= 8) {
+        allBishopMoves[square].nw.push(String.fromCharCode(file - i) + (rank + i));
+      }
     }
   }
+}
+console.log(allBishopMoves["b5"].ne);
+console.log(allBishopMoves["b5"].se);
+console.log(allBishopMoves["b5"].sw);
+console.log(allBishopMoves[23].nw);
